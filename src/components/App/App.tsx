@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import ReactPaginate from "react-paginate";
-import { RotatingSquare } from "react-loader-spinner";
+
+import { Loader } from "../Loader/Loader";
 import { useMemo } from "react";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { MovieGrid } from "../MovieGrid/MovieGrid";
@@ -51,21 +52,7 @@ export default function App() {
   return (
     <div className={styles.app}>
       <SearchBar onSubmit={handleSearch} />
-
-      {(isLoading || isFetching) && (
-        <div style={{ textAlign: "center", marginTop: "40px" }}>
-          <RotatingSquare
-            visible={true}
-            height="100"
-            width="100"
-            color="#4fa94d"
-            ariaLabel="rotating-square-loading"
-          />
-        </div>
-      )}
-
-      {isError && <ErrorMessage />}
-
+      {(isLoading || isFetching) && <Loader />}){isError && <ErrorMessage />}
       {!isLoading && !isError && movies.length > 0 && (
         <>
           <MovieGrid movies={movies} onSelect={setSelectedMovie} />
@@ -82,14 +69,12 @@ export default function App() {
           />
         </>
       )}
-
       {selectedMovie && (
         <MovieModal
           movie={selectedMovie}
           onClose={() => setSelectedMovie(null)}
         />
       )}
-
       <Toaster position="top-right" />
     </div>
   );
