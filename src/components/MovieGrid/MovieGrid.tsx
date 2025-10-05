@@ -21,7 +21,6 @@ export const MovieGrid = ({ movies, onSelect }: MovieGridProps) => {
           <div className={styles.card} onClick={() => onSelect(movie)}>
             <img
               className={styles.image}
-              // Якщо poster_path є → формуємо URL, інакше одразу заглушка
               src={
                 movie.poster_path
                   ? `${IMAGE_BASE_URL}${movie.poster_path}`

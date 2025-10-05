@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import ReactPaginate from "react-paginate";
 import { RotatingSquare } from "react-loader-spinner";
+import { useMemo } from "react";
 import { SearchBar } from "../SearchBar/SearchBar";
 import { MovieGrid } from "../MovieGrid/MovieGrid";
 import { ErrorMessage } from "../ErrorMessage/ErrorMessage";
@@ -13,19 +14,18 @@ import styles from "./App.module.css";
 
 export default function App() {
   const [query, setQuery] = useState<string>("");
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [page, setPage] = useState<number>(1);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
-    enabled: !!query,
-    placeholderData: (prev) => prev,
+    enabled: query !== "",
+    placeholderData: keepPreviousData, //  щоб не було "блимань"
   });
 
-  const movies = data?.movies ?? [];
-  const totalResults = data?.totalResults ?? 0;
-  const totalPages = Math.ceil(totalResults / 10);
+  const movies = useMemo(() => data?.movies ?? [], [data?.movies]);
+  const totalPages = data?.totalPages ?? 0;
 
   const handleSearch = (value: string) => {
     setQuery(value);
@@ -35,13 +35,12 @@ export default function App() {
   const handlePageChange = (selected: { selected: number }) => {
     setPage(selected.selected + 1);
   };
-
-  // тости через useEffect
+  // Тости через useEffect
   useEffect(() => {
-    if (!isLoading && !isError && query && totalResults === 0) {
+    if (!isLoading && !isError && query && movies.length === 0) {
       toast.error("No movies found for your request.");
     }
-  }, [isLoading, isError, query, totalResults]);
+  }, [isLoading, isError, query, movies]);
 
   useEffect(() => {
     if (isError) {

@@ -6,16 +6,16 @@ interface SearchBarProps {
   onSubmit: (query: string) => void;
 }
 
-const validationSchema = Yup.object({
-  query: Yup.string()
-    .min(2, "Enter at least 2 characters")
-    .required("Search query is required"),
-});
+export const SearchBar = ({ onSubmit }: SearchBarProps) => {
+  const initialValues = { query: "" };
 
-export function SearchBar({ onSubmit }: SearchBarProps) {
+  const validationSchema = Yup.object({
+    query: Yup.string().required("Please enter your search query."),
+  });
+
   return (
     <Formik
-      initialValues={{ query: "" }}
+      initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values, { resetForm }) => {
         onSubmit(values.query);
@@ -25,12 +25,13 @@ export function SearchBar({ onSubmit }: SearchBarProps) {
       {() => (
         <Form className={styles.form}>
           <Field
-            type="text"
-            name="query"
-            placeholder="Search for a movie..."
             className={styles.input}
+            name="query"
+            placeholder="Search movies..."
+            autoComplete="off"
+            autoFocus
           />
-          <button type="submit" className={styles.button}>
+          <button className={styles.button} type="submit">
             Search
           </button>
           <FormikError name="query" component="div" className={styles.error} />
@@ -38,4 +39,4 @@ export function SearchBar({ onSubmit }: SearchBarProps) {
       )}
     </Formik>
   );
-}
+};

@@ -1,3 +1,38 @@
 .app {
   padding: 0 16px;
 }
+.pagination {
+  display: flex;
+  justify-content: center; /* по центру */
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  padding: 16px 0;
+  margin: 0;
+}
+
+.pagination li {
+  display: inline-block;
+}
+
+.pagination li a {
+  display: block;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination li a:hover {
+  background-color: #f0f0f0;
+  border-color: #aaa;
+}
+
+.activePage a {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}

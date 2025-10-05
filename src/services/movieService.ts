@@ -3,6 +3,7 @@ import type { Movie } from "../types/movie";
 interface MoviesResult {
   movies: Movie[];
   totalResults: number;
+  totalPages: number;
 }
 
 export async function fetchMovies(
@@ -28,5 +29,6 @@ export async function fetchMovies(
   return {
     movies: data.results,
     totalResults: data.total_results,
+    totalPages: Math.min(data.total_pages, 500), // TMDB максимум 500
   };
 }
