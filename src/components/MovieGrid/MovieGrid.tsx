@@ -28,7 +28,6 @@ export const MovieGrid = ({ movies, onSelect }: MovieGridProps) => {
               }
               alt={movie.title}
               loading="lazy"
-              // Якщо картинка не підвантажилась → замінюємо на заглушку
               onError={(e) => {
                 e.currentTarget.src = PLACEHOLDER;
               }}

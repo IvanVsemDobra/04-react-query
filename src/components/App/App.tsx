@@ -52,7 +52,8 @@ export default function App() {
   return (
     <div className={styles.app}>
       <SearchBar onSubmit={handleSearch} />
-      {(isLoading || isFetching) && <Loader />}){isError && <ErrorMessage />}
+      {(isLoading || isFetching) && <Loader />}
+      {isError && <ErrorMessage />}
       {!isLoading && !isError && movies.length > 0 && (
         <>
           <MovieGrid movies={movies} onSelect={setSelectedMovie} />
