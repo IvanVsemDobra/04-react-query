@@ -25,8 +25,8 @@ export default function App() {
     placeholderData: keepPreviousData, //  щоб не було "блимань"
   });
 
-  const movies = useMemo(() => data?.movies ?? [], [data?.movies]);
-  const totalPages = data?.totalPages ?? 0;
+  const movies = useMemo(() => data?.results ?? [], [data?.results]);
+  const totalPages = data?.total_pages ?? 0;
 
   const handleSearch = (value: string) => {
     setQuery(value);
