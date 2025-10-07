@@ -2,7 +2,33 @@ import type { Movie } from "../types/movie";
 import axios, { AxiosError } from "axios";
 import * as yup from "yup";
 
-// --- Схеми Yup ---
+// ---  для "сирої" відповіді TMDb API ---
+interface TMDbMoviesResponse {
+  results: Array<{
+    id: number;
+    title: string;
+    overview?: string | null;
+    release_date?: string | null;
+    poster_path?: string | null;
+    backdrop_path?: string | null;
+    vote_average?: number | null;
+  }>;
+  total_results: number;
+  total_pages: number;
+}
+
+interface MoviesResult {
+  results: Movie[];
+  total_results: number;
+  total_pages: number;
+}
+
+interface TMDbErrorResponse {
+  status_message?: string;
+  status_code?: number;
+}
+
+// --- Yup-схеми ---
 const movieSchema = yup.object({
   id: yup.number().required(),
   title: yup.string().required(),
@@ -19,17 +45,6 @@ const moviesResponseSchema = yup.object({
   total_pages: yup.number().required(),
 });
 
-interface MoviesResult {
-  results: Movie[];
-  total_results: number;
-  total_pages: number;
-}
-
-interface TMDbErrorResponse {
-  status_message?: string;
-  status_code?: number;
-}
-
 export async function fetchMovies(
   query: string,
   page: number = 1
@@ -38,7 +53,7 @@ export async function fetchMovies(
 
   if (!token) {
     throw new Error(
-      "VITE_TMDB_TOKEN не знайдено. Додай токен у .env (і не коміть цей файл у репозиторій)."
+      "VITE_TMDB_TOKEN не знайдено. Додай токен у .env і не коміть цей файл."
     );
   }
 
@@ -47,25 +62,27 @@ export async function fetchMovies(
   )}&page=${page}`;
 
   try {
-    const res = await axios.get(url, {
+    //  явний дженерик <TMDbMoviesResponse>
+    const res = await axios.get<TMDbMoviesResponse>(url, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json;charset=utf-8",
       },
     });
 
-    const validatedData = await moviesResponseSchema.validate(res.data, {
+    // Валідація структури відповіді через Yup
+    const validatedData = (await moviesResponseSchema.validate(res.data, {
       abortEarly: false,
       stripUnknown: true,
-    });
+    })) as yup.InferType<typeof moviesResponseSchema>;
 
-    //  всі поля відповідатимуть типу Movie
+    // Нормалізація даних під тип Movie
     const normalizedResults: Movie[] = validatedData.results.map((m) => ({
       id: m.id,
       title: m.title,
       overview: m.overview ?? "",
       release_date: m.release_date ?? "",
-      poster_path: m.poster_path ?? "", // <— тут нормалізуємо null → ""
+      poster_path: m.poster_path ?? "",
       backdrop_path: m.backdrop_path ?? "",
       vote_average: m.vote_average ?? 0,
     }));
@@ -73,7 +90,7 @@ export async function fetchMovies(
     return {
       results: normalizedResults,
       total_results: validatedData.total_results,
-      total_pages: validatedData.total_pages,
+      total_pages: Math.min(validatedData.total_pages, 500), // TMDB максимум 500
     };
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -82,16 +99,13 @@ export async function fetchMovies(
         axiosError.response?.data?.status_message ??
         axiosError.message ??
         "Помилка при запиті до TMDb API.";
-      console.error(" Axios Error:", message);
       throw new Error(`Помилка отримання фільмів: ${message}`);
     }
 
     if (error instanceof yup.ValidationError) {
-      console.error(" Validation Error:", error.errors);
       throw new Error("Некоректна структура відповіді від TMDb API.");
     }
 
-    console.error(" Unknown Error:", error);
     throw new Error("Невідома помилка при отриманні фільмів.");
   }
 }
